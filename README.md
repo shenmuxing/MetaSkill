@@ -1,8 +1,8 @@
-# MetaSkill
+# EtaSkill
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20378925.svg)](https://doi.org/10.5281/zenodo.20378925)
 
-MetaSkill is a public repository for managing, standardizing, testing, and publishing reusable AI-agent skills. It keeps lifecycle workflows, publication checks, and selected public-safe skills in one place.
+EtaSkill is a public repository for managing, standardizing, testing, and publishing reusable AI-agent skills. It keeps lifecycle workflows, publication checks, and selected public-safe skills in one place.
 
 The repository is intentionally public-safe. It should describe reusable workflows, not private machines, private projects, personal accounts, unpublished content, or one-off local context.
 
@@ -28,7 +28,7 @@ uv run --with sphinx --with sphinx-rtd-theme --with myst-parser sphinx-build -b 
 ## Repository Layout
 
 ```text
-MetaSkill/
+EtaSkill/
   docs/                 documentation site source
   skill-management/     lifecycle workflow for reusable skills
   publication-review/   publish-before-review workflow
@@ -37,11 +37,11 @@ MetaSkill/
 
 ## Scope
 
-MetaSkill currently targets Codex skills by default. Compatibility with other agents' skill formats is not planned at this stage.
+EtaSkill currently targets Codex skills by default. Compatibility with other agents' skill formats is not planned at this stage.
 
 ## Authorship and Scope
 
-MetaSkill is authored and maintained by Muxing Shen. The repository is released as a public-safe, reusable workflow and skill-management project. It does not include private project materials, personal machine configuration, unpublished research drafts, or institutional confidential content.
+EtaSkill is authored and maintained by Muxing Shen. The repository is released as a public-safe, reusable workflow and skill-management project. It does not include private project materials, personal machine configuration, unpublished research drafts, or institutional confidential content.
 
 ## Status
 
@@ -49,18 +49,18 @@ This repository is in its initial curation phase. The current priority is to kee
 
 ## Citation
 
-If you use MetaSkill in public work, cite the project as:
+If you use EtaSkill in public work, cite the project as:
 
 ```text
-Shen, M. (2026). MetaSkill: Reusable AI-agent skill management workflows (v0.1.0) [Computer software]. Zenodo. https://doi.org/10.5281/zenodo.20378925
+Shen, M. (2026). EtaSkill: Reusable AI-agent skill management workflows (v0.1.0) [Computer software]. Zenodo. https://doi.org/10.5281/zenodo.20378925
 ```
 
 BibTeX:
 
 ```bibtex
-@software{shen_metaskill_2026,
+@software{shen_etaskill_2026,
   author = {Shen, Muxing},
-  title = {MetaSkill: Reusable AI-agent skill management workflows},
+  title = {EtaSkill: Reusable AI-agent skill management workflows},
   year = {2026},
   version = {0.1.0},
   publisher = {Zenodo},
