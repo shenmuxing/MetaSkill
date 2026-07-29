@@ -9,23 +9,24 @@
 
 ## Dependencies
 
-- Companion skills: `proof-plan`, `call-gpt-pro`, `proof-checker-v2`, and
-  `deepseek-agent`.
-- Optional runtime capability: Codex subagents for preflight difficulty probes
-  and bounded local repair delegation after GPT-pro output or audit findings.
-- External CLIs: inherited from companion skills.
-- Python packages: none.
-- Codex apps/connectors: none.
-- Credentials or accounts: an OpenRouter API key is required only for a real
-  `call-gpt-pro` request; DeepSeek credentials are required only when running a
-  DeepSeek audit.
+- Required companion skills: none for the default local-proof and manual
+  handoff route.
+- Optional companion skill: `call-gpt-pro`, only when the user explicitly asks
+  Codex to perform the GPT Pro dispatch.
+- Optional reviewers: `proof-checker-v2` and `deepseek-agent`; they do not
+  replace Codex's local correctness and exposition passes.
+- External CLIs, Python packages, and connectors: none for the default route.
+- Credentials or accounts: none for the default route. Web access or API
+  credentials may be required by the explicitly selected `call-gpt-pro` route.
 
 ## Install Steps
 
 1. Copy this directory into the active Codex skills root.
 2. Confirm the installed directory contains `SKILL.md`,
-   `agents/openai.yaml`, and `references/dispatch-prompts.md`.
-3. Install or verify the required companion skills.
+   `agents/openai.yaml`, `references/dispatch-prompts.md`, and
+   `references/notation-audit.md`.
+3. Install optional companion skills only for the routes the user intends to
+   use.
 4. Restart Codex so the skill registry can reload.
 
 ## Update Steps
@@ -34,8 +35,8 @@
 2. Replace it with the current source directory, or run `skill-installer` with
    `--update` when installing from a GitHub source.
 3. Run the verification steps below.
-4. Keep the backup until a dry-run handoff reaches `READY_FOR_GPT_PRO` without
-   trying to use legacy `proof-execution`.
+4. Keep the backup until both the local-proof and manual-handoff smoke tests
+   pass without opening a browser or spending API credit.
 
 ## Verification
 
@@ -51,20 +52,30 @@ After installing into the active skills root, run:
 python .\scripts\validate_muxing_install.py --installed-only --skill proof-orchestrator
 ```
 
-Manual smoke test:
+Local-proof smoke test:
 
 ```text
-Use $proof-orchestrator to prepare a GPT-pro handoff for this sample theorem:
-prove uniqueness of fixed points for a contraction mapping.
-Do not spend GPT-pro budget; only dry-run the handoff.
+Use $proof-orchestrator to prove uniqueness of fixed points for a contraction
+mapping. Work locally first. Audit the proof and simplify its exposition.
 ```
 
-The run should use `proof-plan`, run or explicitly skip a preflight difficulty
-probe, prepare or validate `handoff.md`, route real calls through
-`call-gpt-pro`, prefer `proof-checker-v2` for structured audits with direct
-`deepseek-agent` review as fallback, treat bounded subagent repair as
-authorized when the runtime supports subagents, and avoid any
-`proof-execution` dependency.
+The run should attempt and finish the standard proof locally, explicitly check
+the contraction argument, avoid creating a GPT Pro handoff, report zero
+notation blockers, organize the nontrivial implication from the uniqueness
+target down to the contraction subgoal, and produce a concise verified final
+artifact.
+
+Manual-handoff smoke test:
+
+```text
+Use $proof-orchestrator on this deliberately incomplete research lemma. If the
+local attempt cannot close the stated gap, maintain the supplied sources and
+prepare the exact prompt I can paste into GPT Pro. Do not call GPT Pro for me.
+```
+
+The run should isolate the local blocker, create `source-manifest.md`,
+`browser-prompt.md`, and `handoff.md`, reach `READY_FOR_MANUAL_GPT_PRO`, and
+perform no browser or API action.
 
 ## Rollback
 
@@ -74,9 +85,14 @@ authorized when the runtime supports subagents, and avoid any
 
 ## Notes
 
-- Codex may run a short local or subagent preflight probe before GPT-pro
-  spending, and may complete simple local proof patches when they are
-  explicitly labeled and directly checkable from the supplied materials, or
-  delegate them to Codex-managed subagents for parent-thread review.
-- Hard or central proof obligations should go through the reviewed GPT-pro
-  handoff, then receive Codex/DeepSeek audit before being treated as usable.
+- Invoking `proof-orchestrator` authorizes local proof work and run-local file
+  maintenance, not browser control, source uploads, or API spending.
+- The default escalation route is a user-operated browser handoff with stable
+  local sources and a copy-ready prompt.
+- After any GPT Pro answer returns, Codex audits correctness first and then
+  edits for clarity, target-first top-down derivations, explicit induction
+  structure where needed, and minimal notation without hiding non-obvious
+  steps.
+- The notation audit treats undefined symbols and same-glyph/different-meaning
+  collisions as blockers and uses `references/notation-audit.md` for measurable
+  warning thresholds.

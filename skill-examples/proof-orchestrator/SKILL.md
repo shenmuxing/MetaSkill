@@ -1,266 +1,190 @@
 ---
 name: proof-orchestrator
-description: "Coordinate GPT-pro-centered proof runs: prepare reviewed prompt bundles, run preflight difficulty probes, route GPT-pro handoffs, audit outputs, manage bounded local repairs, and produce status-labeled final artifacts."
+description: "Coordinate local-first proof runs: attempt and refine proofs with Codex, audit correctness and notation, maintain run-local sources, prepare copy-ready manual GPT Pro handoffs when local proof stalls."
 ---
 
 # Proof Orchestrator
 
 ## Role
 
-Coordinate proof work as a GPT-pro-centered pipeline. Codex is the local controller and manager for project context, source packaging, approval gates, tool routing, provenance, audit integration, and final assembly. GPT-pro handles hard or central proof obligations. DeepSeek is an independent adversarial reviewer when available.
+Run proof work as a local-first pipeline. Codex first attempts the proof, checks its correctness, and edits it for clarity and economy. Escalate the remaining hard obligation to GPT Pro.
 
-Invoking this skill grants Codex default authority to create any needed
-Codex-capability subagents for the active proof run, including preflight
-difficulty probes and bounded, non-budget local repairs. Parent Codex must
-define each task, review the result, integrate only verified parts, and own the
-final status.
+Default escalation is manual: maintain the sources locally and give the user an exact browser-ready prompt. Invoking this skill does not authorize Codex to operate a browser, upload files, or spend API credit. Use `call-gpt-pro` only when the user explicitly asks Codex to perform the GPT Pro call for the current run.
 
 ## Run Directory
 
-Each idea run lives under:
+Keep each run under:
 
 ```text
 prompts/<YYMMDDHH-num>/
 ```
 
-Preferred files:
+Use only the files needed by the run:
 
 ```text
-task.md              # GPT-pro-facing task instruction
-materials.md         # GPT-pro-facing task materials
-review.md            # user approval checkpoint, optional
-preflight.md         # local/subagent difficulty and prompt-worthiness probe, optional
-handoff.md           # exact GPT-pro handoff package
-gpt-pro-output.md    # GPT-pro result, once available
-audit.md             # checker result or audit summary
-final.md             # repaired usable final version
-codex-ledger.md      # local orchestration state, optional
-next.md              # next proof target or continuation handoff, optional
-sources/             # source snapshots, optional
+task.md              # precise theorem or proof obligation
+materials.md         # definitions, givens, notation, and source excerpts
+local-proof.md       # Codex's proof attempt or isolated blocker
+sources/             # stable local source snapshots
+source-manifest.md   # source role, browser-visible name, and upload status
+browser-prompt.md    # exact text the user can paste into GPT Pro
+handoff.md           # manual/automated route, upload order, and status
+gpt-pro-output.md    # returned GPT Pro answer, kept as raw evidence
+audit.md             # correctness and source-alignment audit
+final.md             # verified, simplified, user-facing proof
+codex-ledger.md      # run state and provenance, optional
+next.md              # next narrow obligation, optional
 ```
 
-Only `task.md` and `materials.md` are required at the standardization stage.
+Do not create `browser-prompt.md`, `handoff.md`, or remote project state before the local attempt unless the user explicitly skips local proof or asks for a handoff package.
 
-## Continuing A Project
+## Continuing a Project
 
-When the user points to an existing run, says to continue, or refers to a
-`next*.md` / `redo*.md` artifact, treat the request as project continuation
-before treating it as a fresh proof task.
+Treat an existing run, `next*.md`, `redo*.md`, or continuation artifact as a project continuation. First read the prior `final.md`, `audit.md`, `local-proof.md`, `codex-ledger.md`, `source-manifest.md`, `handoff.md`, and any next/redo/continuation files that exist. Use `gpt-pro-output.md` only as raw evidence unless its audit accepts the relevant claims.
 
-First rebuild the current project state from local artifacts:
+Always create a new run directory for new proof work. Record the prior run ID, the exact files read, inherited proved/conjectural/rejected claims, preserved sources, and the single current obligation. Treat completed run artifacts and prior GPT Pro conversations as append-only evidence; do not overwrite them.
 
-- read `final.md`, `audit.md`, `codex-ledger.md`, `run-log.md`, and any
-  `next*.md`, `redo*.md`, or `continuation*.md` files in the named run;
-- inspect the corresponding `.agents/pro-manage/runs/<run-id>/` record when a
-  GPT-pro handoff already happened;
-- treat `final.md` plus `audit.md` as the calibrated mathematical state, and
-  use `gpt-pro-output.md` only as raw evidence unless the audit says otherwise;
-- identify accepted claims, conjectural claims, rejected routes, open proof
-  obligations, source snapshots, remote Project/conversation state, and the
-  next narrow target.
-
-For a continuation, always create a new run directory. Treat the prior run as
-the complete transcript and evidence package from the previous conversation,
-not as a checkpoint to resume in place. In the new run's `codex-ledger.md` or
-`review.md`, record:
-
-- `Continuation of: <prior-run-id>`;
-- the exact prior files read;
-- the inherited mathematical status;
-- the single open obligation or theorem target for this run;
-- whether the ChatGPT Project should be reused, newly isolated, or left
-  blocked/unknown;
-- when reusing a ChatGPT Project, that GPT-pro must be asked in a new
-  conversation/chat inside that Project, not by continuing the prior run's
-  conversation.
-
-Treat completed run artifacts as append-only evidence. Do not overwrite,
-rename, or roll forward a prior run's `task.md`, `materials.md`,
-`gpt-pro-input.md`, `gpt-pro-output.md`, `audit.md`, `final.md`, `handoff.md`,
-or `codex-ledger.md` during continuation. A new GPT-pro turn gets fresh files
-with the same standard names inside the new run directory. If the user
-explicitly asks to revise a prior artifact, handle that as a separate
-artifact-edit task, not as proof-project continuation.
-
-Treat prior ChatGPT conversations the same way: append-only evidence, not a
-live context window. For every continuation that needs GPT-pro, open a fresh
-conversation inside the selected Project so the prompt is not polluted by a
-long earlier thread and so context-length pressure cannot silently change the
-answer. Reuse the old conversation only to retrieve or verify already-returned
-output.
-
-Keep the next prompt narrow. Do not ask GPT-pro for a full theorem when the
-previous audit isolated a lemma, counterexample, or assumption check. At the end
-of a nonterminal run, create that run's own `next.md` with the next proof target,
-known blockers, source requirements, and route state needed by a future child
-run.
-
-## GPT Pro Stress Tests
-
-For ChatGPT web stress tests, read `references/stress-tests.md`. Keep unrelated
-tests isolated in fresh Projects and run directories. For an explicit
-continuation of the same stress-test project, reuse the recorded Project only
-when the source set and task lineage still match; otherwise create a fresh
-isolated Project and record the parent run link. Reusing a Project for a
-continuation still requires a new Project conversation/chat for the new prompt.
+If a continuation reaches manual GPT Pro escalation, prepare a new `browser-prompt.md`. The user may reuse a matching ChatGPT Project, but the prompt should go into a fresh conversation so old context does not silently alter the task.
 
 ## Status Labels
 
-Use these decision statuses in `codex-ledger.md`, `review.md`, or `handoff.md` when useful:
+Use these labels in `codex-ledger.md`, `audit.md`, or `handoff.md`:
 
-- `STANDARDIZED_FOR_USER_REVIEW`
-- `PREFLIGHT_REVIEWED`
-- `LOCAL_ONLY`
-- `REWRITE_PROMPT`
-- `SPLIT_CASE`
+- `LOCAL_ATTEMPT`
+- `LOCAL_PROVED`
+- `LOCAL_BLOCKED`
 - `ASK_USER`
-- `READY_FOR_GPT_PRO`
+- `READY_FOR_MANUAL_GPT_PRO`
+- `WAITING_FOR_USER_GPT_PRO_OUTPUT`
+- `READY_FOR_CODEX_DISPATCH`
 - `WAITING_FOR_GPT_PRO_OUTPUT`
 - `NEEDS_GPT_PRO_REDO`
-- `LOCAL_REPAIRABLE`
+- `AUDIT_FAILED`
 - `READY_FOR_USER`
+
+## Notation Gate
+
+When the user asks about notation or symbols, when the proof is theorem-heavy, or when one proof step contains at least five nonstandard symbols, read `references/notation-audit.md` and include this exact scorecard in `audit.md` or the user-facing audit:
+
+```text
+Core semantic objects retained: <retained>/<declared> (<percent>)
+Undefined symbols: <count>
+Symbol collisions: <count>
+One-use definitions: <count>/<all new symbols> (<percent>)
+Maximum parallel representations of one object: <count>
+Maximum alias-chain depth: <count>
+Maximum active nonstandard symbols in one proof step: <count>
+```
+
+Do not rename, merge, omit, or replace these lines with other useful findings. Report logical gaps, domain errors, and irrelevant notation after the fixed scorecard. Core-object retention must be 100%, and undefined symbols and collisions must both be zero before `READY_FOR_USER`.
+
+Never improve the scorecard by inventing a definition, domain, assumption, identity, or relation that the source does not supply. If an undefined symbol or missing implication cannot be resolved from authoritative material, keep it in the audit, mark the proof `AUDIT_FAILED` or `ASK_USER`, and rewrite only the valid fragment or the diagnosis.
+
+## Derivation Structure Gate
+
+For every nontrivial derivation, organize the user-facing proof from the target downward, even if the proof was discovered bottom-up:
+
+1. State the target and its role: "To prove A, it is enough to establish B, C, and D," together with the lemma, identity, or inference that makes those subgoals sufficient.
+2. Derive each immediate subgoal and state where it comes from: an assumption, definition, prior lemma, or an explicitly shown calculation.
+3. If a subgoal has its own dependencies, expand it in the same target-first form. Order dependent subgoals by their true dependency relation rather than presenting a misleading flat list.
+4. Recombine the established subgoals and explicitly return to the original target.
+
+This is an exposition rule, not a license to reverse an implication or hide a gap. Check that the dependency graph is acyclic, every reduction is justified, and no subgoal silently assumes the target. Do not force this scaffold onto a one-step argument where it would add more ceremony than clarity.
+
+Record `Top-down derivation structure: PASS`, `FAIL`, or `NOT_APPLICABLE` in `audit.md`. A nontrivial derivation cannot be `READY_FOR_USER` while this gate is `FAIL`.
 
 ## Workflow
 
-Default route: user idea -> `proof-plan` -> preflight difficulty probe -> user
-review -> `call-gpt-pro` or manual GPT-pro output -> Codex/DeepSeek audit ->
-local repair -> final artifact.
+Default route: freeze target -> local proof -> local correctness audit -> exposition edit -> final. If local proof stalls: maintain sources -> prepare a copy-ready manual GPT Pro handoff -> ingest returned text -> correctness audit -> exposition edit -> final.
 
-1. Freeze the current user request:
-   - identify the idea and target run directory;
-   - decide whether this is a new run or continuation of an existing run;
-   - if it is a continuation, perform the "Continuing A Project" reconstruction
-     before writing or dispatching a new prompt;
-   - do not broaden the mathematical project without user approval.
-2. Standardize with `proof-plan`:
-   - create `task.md` and `materials.md`;
-   - include project purpose only where it affects the mathematical task;
-   - keep Codex-only context in `review.md` or `codex-ledger.md`.
-3. Run a preflight difficulty probe before any GPT-pro approval request:
-   - have Codex or a Codex-capability subagent attempt the shortest honest local answer from `task.md` and `materials.md`;
-   - check whether the target is immediate from definitions, blocked by a domain/support/topology mismatch, already implied by the prompt wording, or genuinely central/hard;
-   - write `preflight.md` with status `SEND_TO_GPT_PRO`, `LOCAL_ONLY`, `REWRITE_PROMPT`, `SPLIT_CASE`, or `ASK_USER`;
-   - if the probe finds a trivial obstruction, prompt mismatch, or wrong abstraction layer, revise the bundle or ask the user before spending GPT-pro budget.
-4. User gate:
-   - stop for review unless the user has already approved packaging;
-   - do not send an unreviewed task to GPT-pro.
-5. Package with `call-gpt-pro`:
-   - validate that `task.md` and `materials.md` include all source context GPT-pro needs;
-   - validate that `preflight.md` is absent only when the user explicitly skipped it, or else that it recommends `SEND_TO_GPT_PRO`;
-   - write `handoff.md` as the exact prompt file or reading-order package;
-   - include an explicit output completion marker such as `END_GPT_PRO_OUTPUT`
-     in the GPT-pro-facing output contract unless the user forbids changing the
-     prompt text;
-   - run the `call-gpt-pro` wrapper in `-DryRun` mode when a local wrapper check is useful;
-   - mark `READY_FOR_GPT_PRO`.
-6. Ingest GPT-pro output:
-   - if the user approves a real call, use `call-gpt-pro` and save its result as `gpt-pro-output.md`;
-   - when `call-gpt-pro` uses ChatGPT web, keep the run in `WAITING_FOR_GPT_PRO_OUTPUT`
-     until the 15-minute polling and completion checks in
-     `call-gpt-pro/references/chatgpt-web.md` say the final assistant message
-     is complete;
-   - if the user provides GPT-pro text manually, save that text as `gpt-pro-output.md` when possible;
-   - run the "GPT-pro Output Repair" pass below before treating copied web output
-     as usable evidence;
-   - preserve GPT-pro's labels and proof structure;
-   - do not silently upgrade conjectures or repaired statements into proved claims.
-7. Audit:
-   - use Codex local checking for source alignment, notation, quantifiers, and mechanical consistency;
-   - use `proof-checker-v2` as the structured adversarial audit driver when it is installed and the claim is user-facing or fragile;
-   - use direct `deepseek-agent` review as the fallback when `proof-checker-v2` is unavailable, blocked, or unsuitable;
-   - write the audit to `audit.md` or another user-specified path;
-   - treat DeepSeek/Codex checking as adversarial review unless the local proof step is simple and explicitly labeled.
-8. Repair and present:
-   - make local edits or delegate a bounded repair task to a Codex-capability subagent when the defect is concrete and checkable from saved GPT-pro output, audit findings, or supplied materials;
-   - parent Codex reviews and integrates only verified parts;
-   - if the repair requires theorem broadening, unsupported assumptions, or a new central proof, mark `NEEDS_GPT_PRO_REDO` and prepare a focused redo prompt;
-   - write `final.md` only when the result is usable and its epistemic status is explicit.
+1. Freeze the target.
+   - Decide whether the request is new or a continuation.
+   - State the exact theorem, assumptions, quantifiers, and allowed sources.
+   - Do not broaden or repair the theorem silently.
+2. Maintain local evidence.
+   - Read only the files needed to understand the target.
+   - Copy stable, directly relevant snapshots into `sources/` when the original may change or cannot be referred to reliably.
+   - Keep private run materials in the run directory, never in the skill package.
+3. Attempt the proof locally.
+   - Try to complete the actual proof, disproof, counterexample, or diagnosis; do not stop at a difficulty probe.
+   - Check definitions, boundary cases, domains, support, topology, quantifiers, and imported theorem hypotheses.
+   - Write `local-proof.md` with the conclusion, proof attempt, dependencies, and any unresolved gap.
+   - If successful, mark `LOCAL_PROVED` and continue to local audit and editing.
+   - If unsuccessful, mark `LOCAL_BLOCKED`, isolate the smallest hard obligation, and only then prepare the GPT Pro package.
+4. Audit correctness locally.
+   - Verify every theorem, lemma, reduction, equality, bound, constant, and quantifier against the stated assumptions and local sources.
+   - Distinguish proved, imported, conjectural, repaired, and unsupported statements.
+   - Treat optional external or DeepSeek review as additional evidence, not a substitute for Codex's own audit, and do not trigger a paid or remote reviewer without authorization.
+5. Edit the proof for exposition.
+   - Always read `references/notation-audit.md` when the user asks about notation or symbols, when the output is theorem-heavy, or when one proof step contains at least five nonstandard symbols.
+   - Lead with the conclusion and expose the main logical structure.
+   - Apply the Derivation Structure Gate: state the target first, reduce it to sufficient immediate subgoals, explain the source of each subgoal, and recombine them to close the target.
+   - Before deleting notation, identify the theorem's semantic center: its state variable, policy or distribution, operator, objective, and dependency direction. Preserve these objects in every main result.
+   - Keep enough intermediate reasoning that a reader can verify every non-obvious transition.
+   - For induction, state the base case, induction hypothesis, and induction step wherever omitting one would hide the argument.
+   - Remove redundant or genuinely immediate steps only after confirming that no logical dependency is lost.
+   - Simplify notation: delete unused symbols, avoid multiple names for the same object, shorten unnecessary subscripts, and introduce notation only when it reduces total complexity.
+   - Use coordinates and abbreviations to compute with a core object, never to replace it. Map every coordinate-level conclusion back to the original theorem interface.
+   - Copy the exact seven-line scorecard from `references/notation-audit.md` into `audit.md`; do not rename, merge, or replace its metrics with an informal summary.
+   - Do not mark `READY_FOR_USER` unless core-object retention is 100% and no symbol is undefined or reused with a different meaning. Fix or explicitly justify all threshold warnings.
+   - Prefer a short direct argument over repeated summaries or decorative formalism. Never polish an unresolved gap into an apparently complete proof.
+6. Prepare manual GPT Pro escalation when needed.
+   - Narrow the request to the blocker exposed by `local-proof.md`.
+   - Complete the source-maintenance contract below.
+   - Write `browser-prompt.md` as the exact text the user can copy and paste.
+   - Write `handoff.md` with source upload order and simple return instructions.
+   - Mark `READY_FOR_MANUAL_GPT_PRO`, present the package, and wait for the user to return the answer.
+7. Dispatch only with explicit authorization.
+   - A request such as "use GPT Pro" does not by itself authorize Codex to operate the browser or spend API credit; keep the manual route.
+   - Switch to Codex execution only when the user explicitly asks Codex to call or operate GPT Pro for this run.
+   - Then mark `READY_FOR_CODEX_DISPATCH`, load `call-gpt-pro`, confirm the selected web/API route and any spending or upload authority, and follow that skill's completion protocol.
+   - Do not reuse authorization from a prior run or infer an API fallback after a browser failure.
+8. Ingest, audit, and edit the returned answer.
+   - Save user-pasted or Codex-retrieved text as `gpt-pro-output.md`.
+   - Apply only the formatting repairs allowed below before auditing.
+   - Audit correctness and source alignment before using any claim.
+   - Then perform the full exposition edit from step 5; `final.md` may be much clearer and shorter than the raw answer while preserving all necessary logic and epistemic labels.
+   - If a central gap remains, mark `NEEDS_GPT_PRO_REDO` and prepare a focused manual redo prompt first. Dispatch the redo through Codex only after new explicit authorization.
 
-## GPT-pro Output Repair
+## Manual Handoff Contract
 
-After saving `gpt-pro-output.md`, perform the same formatting-only cleanup
-contract used by `call-gpt-pro/references/chatgpt-web.md`, plus the
-proof-specific checks below. This repair pass is for copied-output corruption,
-manual micro-edits, and small detail additions only. It must not change proof
-claims, constants, assumptions, theorem status, or proof order.
+For a manual GPT Pro handoff:
+
+1. Keep authoritative copies under `sources/` with stable generic filenames.
+2. Write `source-manifest.md` with, for each source:
+   - local relative path;
+   - browser-visible filename;
+   - why it is needed;
+   - whether it must be uploaded separately or is summarized in `materials.md`;
+   - current status: `ready`, `missing`, `optional`, or `returned-by-user`.
+3. Make `browser-prompt.md` self-contained with the exact target, assumptions, definitions, requested output, and source filenames GPT Pro will see. Do not include local absolute paths, route bookkeeping, or instructions meant only for Codex.
+4. End the requested output contract with a distinctive marker such as `END_GPT_PRO_OUTPUT` so copied output can be checked for completeness.
+5. Make `handoff.md` tell the user, in order, which files to upload, which text to paste, and where to paste the returned answer locally. Do not require browser automation.
+
+If a required source is missing, mark the handoff blocked rather than silently replacing it with memory. Keep the prompt narrow: ask for one lemma, counterexample, assumption check, or proof obligation whenever the local audit has isolated one.
+
+## GPT Pro Output Repair
+
+Keep `gpt-pro-output.md` recognizable as raw GPT Pro evidence. Formatting repair may fix copy corruption but must not change claims, constants, assumptions, theorem status, or proof order.
 
 Required checks:
 
-- Confirm the expected completion marker such as `END_GPT_PRO_OUTPUT` is present
-  when the handoff requested one.
-- Check display math delimiter balance and inspect suspicious blank lines inside
-  `$$...$$` blocks.
-- Repair GPT/Markdown copy corruption of large braces: `\left{` and `\right}`
-  used as delimiters must become `\left\{` and `\right\}`. For indicator
-  expressions, also repair obvious spacing damage such as
-  `\mathbf 1!\left{...` to `\mathbf 1\!\left\{...`.
-- Scan for residual copy separators such as standalone `====`, `======`,
-  `----`, or longer all-`=` / all-`-` lines, especially inside display math.
-  Remove or replace them only when the intended operator is unambiguous from the
-  adjacent formula or a cleaner companion file such as `final.md`; otherwise
-  leave a local flag instead of guessing. Do not treat Markdown table delimiter
-  rows like `| --- | --- |` as corruption.
-- Scan for common rendered-math copy artifacts such as stray `#`, `*{...}`,
-  `\sum*`, `\mathbb{E}*`, `\operatorname{...}*`, and malformed right-delimiter
-  fragments.
+- Confirm the requested completion marker is present.
+- Balance display-math delimiters and inspect suspicious blank lines.
+- Repair obvious escaped-brace corruption such as `\left{` to `\left\{` and `\right}` to `\right\}` only when the intended delimiter is unambiguous.
+- Remove residual web-copy separators only when their intended role is clear; otherwise flag them in `audit.md`.
+- Scan for malformed operators, stray Markdown markers, and broken right delimiters.
 
-If a cleaned `final.md` already exists and is audit-aligned, it may be used as a
-companion source to restore the intended Markdown/LaTeX structure. Keep
-`gpt-pro-output.md` recognizable as GPT-pro output unless the user explicitly
-asks to rewrite it; record any nontrivial repair in `audit.md`,
-`codex-ledger.md`, or the final status note.
-
-## Preflight Difficulty Probe
-
-Use a preflight probe for GPT-pro-bound or stress-test runs unless the user
-explicitly asks to skip it. The probe is a budget guard and prompt-quality
-check, not a replacement for GPT-pro on hard central proof obligations.
-
-Codex may run the probe itself or delegate it to a Codex-capability subagent.
-The subagent must return an answer-only artifact unless Codex explicitly asks
-it to write `preflight.md`. It must not broaden the theorem, call GPT-pro, add
-external citations, upload sources, or make unrelated edits.
-
-The probe should try to answer the task quickly and then classify the run:
-
-- `SEND_TO_GPT_PRO`: the short local attempt exposes a genuinely hard central
-  obligation, fragile proof step, or important uncertainty that merits GPT-pro.
-- `LOCAL_ONLY`: the task is already resolved by a short definition-level
-  argument, simple counterexample, or mechanical calculation.
-- `REWRITE_PROMPT`: the prompt wording forces a shallow or predetermined
-  answer, hides the real mathematical question, or asks for a theorem before
-  the blockers have been stated.
-- `SPLIT_CASE`: the task mixes algorithms, regimes, or assumptions that should
-  be separated before GPT-pro sees it.
-- `ASK_USER`: the intended research target is ambiguous enough that Codex
-  should not choose a direction silently.
-
-Write `preflight.md` with this structure:
-
-```text
-Status: SEND_TO_GPT_PRO | LOCAL_ONLY | REWRITE_PROMPT | SPLIT_CASE | ASK_USER
-
-Short local answer:
-[the shortest honest answer from the supplied materials]
-
-Triviality and mismatch check:
-- Immediate from definitions?
-- Only a domain, support, topology, or boundary mismatch?
-- Already implied by prompt wording?
-- Does the task match the user's likely research intent?
-
-Recommended next action:
-[send, answer locally, rewrite, split, or ask]
-```
-
-Parent Codex must review the probe. If the probe status is not
-`SEND_TO_GPT_PRO`, do not prepare a budgeted GPT-pro call until the bundle is
-rewritten, split, answered locally, or explicitly approved by the user.
+Record nontrivial repairs in `audit.md` or `codex-ledger.md`. Perform substantive clarity and notation editing in `final.md`, after the correctness audit, rather than rewriting the raw output.
 
 ## Guardrails
 
-- Audit GPT-pro theorem, lemma, proposition, reduction, regret-bound, or key-equivalence claims, especially when a hidden assumption would change the conclusion.
-- Treat substantive proof gaps as `NEEDS_GPT_PRO_REDO`; do not patch them locally by broadening the theorem or inventing unsupported assumptions.
-- Do not use archived legacy proof skills, old Codex proof workers, or local plan-execute-replan proof search unless the user explicitly asks for a legacy comparison.
-- Do not ask DeepSeek or a subagent to replace GPT-pro for a hard central proof unless the user changes the pipeline.
-- Do not spend GPT-pro budget automatically; prepare the handoff and wait for the user or a user-provided GPT-pro result.
+- Prefer a complete local proof over escalation, but label uncertainty honestly.
+- Never invent missing citations, source statements, assumptions, or proof steps to avoid escalation.
+- Never treat invoking this skill as authority for browser control, uploads, API spending, or a second GPT Pro turn.
+- Do not ask GPT Pro for a full theorem when the local attempt has isolated a smaller blocker.
+- Audit before simplifying. Preserve any step whose removal would make a non-obvious inference unverifiable.
+- Treat undefined symbols and same-glyph/different-meaning collisions as correctness blockers, not cosmetic issues. Apply the thresholds in `references/notation-audit.md` before finalization.
+- Treat loss of a theorem's core state, policy, distribution, operator, objective, or dependency direction as a notation blocker even when the rewritten coordinate formulas are shorter and locally correct.
+- Treat an unjustified target-to-subgoal reduction, a circular dependency, or a derivation that never returns to its stated target as an exposition blocker.
+- If correctness and elegance conflict, preserve correctness and state the remaining exposition issue explicitly.

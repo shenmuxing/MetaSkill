@@ -166,9 +166,9 @@ SKILL_DEPENDENCIES = {
         ),
     },
     "proof-orchestrator": {
-        "skills": ("proof-plan", "call-gpt-pro", "proof-checker-v2", "deepseek-agent"),
         "files": (
             "references/dispatch-prompts.md",
+            "references/notation-audit.md",
         ),
     },
     "proof-plan": {},
