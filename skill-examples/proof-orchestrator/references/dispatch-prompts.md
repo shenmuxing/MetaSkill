@@ -11,7 +11,7 @@ Use $proof-orchestrator to attempt this proof locally before preparing any GPT
 Pro handoff.
 
 Run directory:
-prompts/<YYMMDDHH-num>/
+mindflows/<YYMMDDHH-num>/
 
 Target:
 [exact theorem, lemma, disproof, or diagnosis]
@@ -22,6 +22,10 @@ Inputs:
 Requirements:
 - Check assumptions, domains, boundary cases, quantifiers, and imported theorem
   hypotheses.
+- For a research-level, open-ended, or repeatedly stalled obligation, apply
+  references/portfolio-search.md and maintain approach-registry.md before
+  promoting one route as a proof candidate.
+- Treat an expected answer as a search direction, never as a proof premise.
 - Write the complete attempt to local-proof.md.
 - If it succeeds, audit correctness and edit the proof for clarity and minimal
   notation before writing final.md.
@@ -33,7 +37,46 @@ Requirements:
   reduction to immediate subgoals, derive each subgoal from named inputs, and
   recombine them to close the target.
 - If it fails, isolate the smallest unresolved obligation. Do not call GPT Pro
-  or create remote project state.
+  or create remote project state. Classify whether the blocker is weaker,
+  comparable, equivalent, stronger, or unknown relative to the target.
+```
+
+## Portfolio Search Prompt
+
+Use this template only for a research-level, open-ended, or repeatedly stalled
+obligation. It works sequentially; use independent workers only when the user
+has authorized them and the current environment makes them available.
+
+```text
+Use $proof-orchestrator to run a conclusion-neutral proof-search portfolio for
+this difficult obligation. Work locally and do not call GPT Pro, control a
+browser, upload files, or spend API credit.
+
+Run directory:
+mindflows/<YYMMDDHH-num>/
+
+Frozen target contract:
+[exact target, assumptions, quantifiers, object conventions, accepted outputs,
+and results that do not count as completion]
+
+Requirements:
+- Read references/portfolio-search.md and create approach-registry.md.
+- Begin with genuinely different mathematical mechanisms, not paraphrases of
+  one favored reduction.
+- Preserve early independence among authorized workers and cross-pollinate only
+  after concrete results and blockers are recorded.
+- Require each route to return a lemma, construction, equation, proof fragment,
+  counterexample, or exact blocker.
+- Classify every central blocker as weaker, comparable, equivalent, stronger,
+  or unknown relative to the frozen target.
+- Block theorem-strength routes without a new mechanism. Reopen one only with a
+  valid novelty key.
+- Run task-specific adversarial checks and small counterexample searches where
+  feasible.
+- Promote only an exact-target CANDIDATE to local correctness audit.
+- If no route remains actionable, report the strongest rigorous result and the
+  exact smallest blocker. Record Equivalent-strength blocker: YES, NO, or
+  UNKNOWN in audit.md or codex-ledger.md.
 ```
 
 ## Continuation Prompt
@@ -43,7 +86,7 @@ Use $proof-orchestrator to continue this proof project locally from the prior
 run.
 
 Prior run directory:
-prompts/<YYMMDDHH-num>/
+mindflows/<YYMMDDHH-num>/
 
 Continuation request:
 [one narrow obligation]
@@ -51,10 +94,12 @@ Continuation request:
 Requirements:
 - Read the prior final.md, audit.md, local-proof.md, codex-ledger.md,
   source-manifest.md, handoff.md, and any next/redo/continuation files that
-  exist.
+  exist. Read approach-registry.md when present.
 - Create a new run directory and record the prior run ID and exact files read.
 - Inherit only audited claims; treat raw GPT Pro output as evidence.
 - Reuse stable local sources without overwriting the prior run.
+- Inherit a blocked route only with its blocker-strength classification and a
+  valid new novelty key; otherwise keep it blocked.
 - Attempt the current obligation locally before preparing a new GPT Pro prompt.
 - If escalation is still needed, use a new browser prompt and a fresh GPT Pro
   conversation.
@@ -68,7 +113,7 @@ this run. Do not call GPT Pro, control a browser, upload files, or spend API
 credit.
 
 Run directory:
-prompts/<YYMMDDHH-num>/
+mindflows/<YYMMDDHH-num>/
 
 Required inputs:
 - local-proof.md
@@ -82,6 +127,9 @@ Outputs:
 
 Requirements:
 - Ask only for the smallest unresolved proof obligation.
+- If the blocker is comparable, equivalent, or stronger than the target, say so
+  explicitly and ask for a concrete new mechanism rather than calling the
+  missing step routine.
 - Give every source a stable browser-visible filename and state whether it must
   be uploaded separately.
 - Make browser-prompt.md the exact self-contained text the user can paste. Keep
@@ -104,7 +152,7 @@ The user has explicitly authorized Codex to dispatch this prepared GPT Pro
 handoff for the current run.
 
 Run directory:
-prompts/<YYMMDDHH-num>/
+mindflows/<YYMMDDHH-num>/
 
 Requirements:
 - Mark READY_FOR_CODEX_DISPATCH.
@@ -123,7 +171,7 @@ Requirements:
 Use $proof-orchestrator to audit and edit the returned GPT Pro proof.
 
 Run directory:
-prompts/<YYMMDDHH-num>/
+mindflows/<YYMMDDHH-num>/
 
 Inputs:
 - gpt-pro-output.md

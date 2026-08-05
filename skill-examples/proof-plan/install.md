@@ -52,7 +52,7 @@ Use $proof-plan to standardize this sample proof idea into a prompt bundle:
 prove that a contraction mapping on a complete metric space has at most one fixed point.
 ```
 
-The run should produce a `prompts/<YYMMDDHH-num>/` bundle with `task.md` and
+The run should produce a `mindflows/<YYMMDDHH-num>/` bundle with `task.md` and
 `materials.md`, and should label any local proof sanity check separately from
 the GPT-pro-facing task.
 

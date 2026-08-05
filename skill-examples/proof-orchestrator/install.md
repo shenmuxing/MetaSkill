@@ -24,7 +24,7 @@
 1. Copy this directory into the active Codex skills root.
 2. Confirm the installed directory contains `SKILL.md`,
    `agents/openai.yaml`, `references/dispatch-prompts.md`, and
-   `references/notation-audit.md`.
+   `references/notation-audit.md`, and `references/portfolio-search.md`.
 3. Install optional companion skills only for the routes the user intends to
    use.
 4. Restart Codex so the skill registry can reload.
@@ -65,6 +65,20 @@ notation blockers, organize the nontrivial implication from the uniqueness
 target down to the contraction subgoal, and produce a concise verified final
 artifact.
 
+Portfolio-search smoke test:
+
+```text
+Use $proof-orchestrator on this difficult proof fixture. Maintain several
+mechanism-distinct routes, identify the supplied circular equivalent-strength
+reduction and false sublemma, and do not call GPT Pro.
+```
+
+The run should create `approach-registry.md`, reject the false sublemma with its
+small counterexample, block the circular reduction, require a novelty key before
+reopening any route, and report the exact unresolved blocker without inventing
+a completion. It must also work sequentially when no independent workers are
+authorized or available.
+
 Manual-handoff smoke test:
 
 ```text
@@ -89,6 +103,9 @@ perform no browser or API action.
   maintenance, not browser control, source uploads, or API spending.
 - The default escalation route is a user-operated browser handoff with stable
   local sources and a copy-ready prompt.
+- Difficult or repeatedly stalled obligations use
+  `references/portfolio-search.md` to manage mechanism-distinct routes,
+  theorem-strength blockers, adversarial checks, and novelty-gated reopening.
 - After any GPT Pro answer returns, Codex audits correctness first and then
   edits for clarity, target-first top-down derivations, explicit induction
   structure where needed, and minimal notation without hiding non-obvious

@@ -25,7 +25,7 @@ notation, user intent, or which source materials are authoritative.
 Create one run directory per idea:
 
 ```text
-prompts/<YYMMDDHH-num>/
+mindflows/<YYMMDDHH-num>/
 ```
 
 Use local time for `YYMMDDHH`. Use a two-digit counter such as `01`, `02`, `03`; choose the next unused counter when several ideas are prepared in the same hour.
@@ -33,16 +33,16 @@ Use local time for `YYMMDDHH`. Use a two-digit counter such as `01`, `02`, `03`;
 The minimal GPT-pro-facing bundle is:
 
 ```text
-prompts/<YYMMDDHH-num>/task.md
-prompts/<YYMMDDHH-num>/materials.md
+mindflows/<YYMMDDHH-num>/task.md
+mindflows/<YYMMDDHH-num>/materials.md
 ```
 
 Optional local-only files may be added when useful:
 
 ```text
-prompts/<YYMMDDHH-num>/codex-notes.md
-prompts/<YYMMDDHH-num>/review.md
-prompts/<YYMMDDHH-num>/sources/
+mindflows/<YYMMDDHH-num>/codex-notes.md
+mindflows/<YYMMDDHH-num>/review.md
+mindflows/<YYMMDDHH-num>/sources/
 ```
 
 Do not force a fixed section list into `task.md` or `materials.md`. Include only the information GPT-pro needs to do the assigned proof task well.

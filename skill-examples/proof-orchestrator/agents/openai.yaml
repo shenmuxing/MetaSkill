@@ -1,4 +1,4 @@
 interface:
   display_name: "Proof Orchestrator"
   short_description: "Run clear, audited, local-first proofs"
-  default_prompt: "Use $proof-orchestrator to attempt this proof locally, preserve its core mathematical objects, audit correctness and notation, rewrite nontrivial derivations from the target down to justified subgoals, and prepare a manual GPT Pro prompt only if the local proof stalls."
+  default_prompt: "Use $proof-orchestrator to attempt this proof locally, open a mechanism-based search portfolio only when the obligation is difficult or repeatedly stalled, preserve its core mathematical objects, audit correctness and notation, rewrite nontrivial derivations from the target down to justified subgoals, and prepare a manual GPT Pro prompt only if the local proof stalls."
