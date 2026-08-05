@@ -219,6 +219,7 @@ __marimo__/
 
 # Local-only workspaces and debugging reports
 .skill-test-runs/
+skill-examples-privates/
 
 # Private local automation rules and generated artifacts
 local/

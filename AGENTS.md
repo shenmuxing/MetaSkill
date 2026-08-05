@@ -2,6 +2,11 @@
 
 MetaSkill is a public repository for reusable skill management workflows and public skill examples. Treat this repository as publishable by default: keep private machine paths, personal notes, account names, unpublished project details, and one-off local workarounds out of tracked files.
 
+## Local Instructions
+
+- If `AGENTS.local.md` exists at the repository root, read and follow it after this file.
+- Keep `AGENTS.local.md` out of version control. It is reserved for private, machine-specific instructions.
+
 ## Skill Routing
 
 - `skill-management/` is the first-class skill for managing skills. It owns inventory, audit, standardization, testing, and publication-readiness workflows.

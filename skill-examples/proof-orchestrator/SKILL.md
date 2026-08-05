@@ -16,7 +16,7 @@ Default escalation is manual: maintain the sources locally and give the user an 
 Keep each run under:
 
 ```text
-prompts/<YYMMDDHH-num>/
+mindflows/<YYMMDDHH-num>/
 ```
 
 Use only the files needed by the run:
@@ -25,6 +25,7 @@ Use only the files needed by the run:
 task.md              # precise theorem or proof obligation
 materials.md         # definitions, givens, notation, and source excerpts
 local-proof.md       # Codex's proof attempt or isolated blocker
+approach-registry.md # optional route portfolio for difficult proof searches
 sources/             # stable local source snapshots
 source-manifest.md   # source role, browser-visible name, and upload status
 browser-prompt.md    # exact text the user can paste into GPT Pro
@@ -40,9 +41,11 @@ Do not create `browser-prompt.md`, `handoff.md`, or remote project state before 
 
 ## Continuing a Project
 
-Treat an existing run, `next*.md`, `redo*.md`, or continuation artifact as a project continuation. First read the prior `final.md`, `audit.md`, `local-proof.md`, `codex-ledger.md`, `source-manifest.md`, `handoff.md`, and any next/redo/continuation files that exist. Use `gpt-pro-output.md` only as raw evidence unless its audit accepts the relevant claims.
+Treat an existing run, `next*.md`, `redo*.md`, or continuation artifact as a project continuation. First read the prior `final.md`, `audit.md`, `local-proof.md`, `codex-ledger.md`, `source-manifest.md`, `handoff.md`, `approach-registry.md` when present, and any next/redo/continuation files that exist. Use `gpt-pro-output.md` only as raw evidence unless its audit accepts the relevant claims.
 
 Always create a new run directory for new proof work. Record the prior run ID, the exact files read, inherited proved/conjectural/rejected claims, preserved sources, and the single current obligation. Treat completed run artifacts and prior GPT Pro conversations as append-only evidence; do not overwrite them.
+
+When inheriting an approach registry, preserve family identities and blocker-strength classifications. Keep a blocked route blocked unless the new run records a valid novelty key under `references/portfolio-search.md`.
 
 If a continuation reaches manual GPT Pro escalation, prepare a new `browser-prompt.md`. The user may reuse a matching ChatGPT Project, but the prompt should go into a fresh conversation so old context does not silently alter the task.
 
@@ -93,9 +96,23 @@ This is an exposition rule, not a license to reverse an implication or hide a ga
 
 Record `Top-down derivation structure: PASS`, `FAIL`, or `NOT_APPLICABLE` in `audit.md`. A nontrivial derivation cannot be `READY_FOR_USER` while this gate is `FAIL`.
 
+## Search Portfolio Gate
+
+For a research-level, open-ended, or repeatedly stalled obligation, read
+`references/portfolio-search.md` before committing to one proof route. Create
+`approach-registry.md`, compare routes by their mathematical mechanism, classify
+the strength of every central blocker, and run task-specific adversarial checks.
+For a routine proof with a direct path, skip this gate and do not create the
+registry.
+
+An expected answer is a search direction, not a proof premise. Do not assume a
+theorem is true merely because the user, benchmark, or prior model output says a
+proof exists. Use independent workers only when they are explicitly authorized
+and available; the gate must also work as a sequential local search.
+
 ## Workflow
 
-Default route: freeze target -> local proof -> local correctness audit -> exposition edit -> final. If local proof stalls: maintain sources -> prepare a copy-ready manual GPT Pro handoff -> ingest returned text -> correctness audit -> exposition edit -> final.
+Default route: freeze target -> maintain evidence -> open the search portfolio when needed -> local proof -> local correctness audit -> exposition edit -> final. If local proof stalls: maintain sources -> prepare a copy-ready manual GPT Pro handoff -> ingest returned text -> correctness audit -> exposition edit -> final.
 
 1. Freeze the target.
    - Decide whether the request is new or a continuation.
@@ -106,6 +123,8 @@ Default route: freeze target -> local proof -> local correctness audit -> exposi
    - Copy stable, directly relevant snapshots into `sources/` when the original may change or cannot be referred to reliably.
    - Keep private run materials in the run directory, never in the skill package.
 3. Attempt the proof locally.
+   - Apply the Search Portfolio Gate before committing to one route when the obligation is research-level, open-ended, or repeatedly stalled.
+   - If the gate applies, maintain `approach-registry.md` and promote only an exact-target `CANDIDATE` to the normal proof audit.
    - Try to complete the actual proof, disproof, counterexample, or diagnosis; do not stop at a difficulty probe.
    - Check definitions, boundary cases, domains, support, topology, quantifiers, and imported theorem hypotheses.
    - Write `local-proof.md` with the conclusion, proof attempt, dependencies, and any unresolved gap.
@@ -114,6 +133,7 @@ Default route: freeze target -> local proof -> local correctness audit -> exposi
 4. Audit correctness locally.
    - Verify every theorem, lemma, reduction, equality, bound, constant, and quantifier against the stated assumptions and local sources.
    - Distinguish proved, imported, conjectural, repaired, and unsupported statements.
+   - For an unresolved run, record `Equivalent-strength blocker: YES`, `NO`, or `UNKNOWN` in `audit.md` or `codex-ledger.md` and justify the classification.
    - Treat optional external or DeepSeek review as additional evidence, not a substitute for Codex's own audit, and do not trigger a paid or remote reviewer without authorization.
 5. Edit the proof for exposition.
    - Always read `references/notation-audit.md` when the user asks about notation or symbols, when the output is theorem-heavy, or when one proof step contains at least five nonstandard symbols.
@@ -183,6 +203,7 @@ Record nontrivial repairs in `audit.md` or `codex-ledger.md`. Perform substantiv
 - Never invent missing citations, source statements, assumptions, or proof steps to avoid escalation.
 - Never treat invoking this skill as authority for browser control, uploads, API spending, or a second GPT Pro turn.
 - Do not ask GPT Pro for a full theorem when the local attempt has isolated a smaller blocker.
+- Do not present a comparable, equivalent, or stronger missing lemma as routine progress. Reopen a blocked route only when `references/portfolio-search.md` supplies a valid novelty key.
 - Audit before simplifying. Preserve any step whose removal would make a non-obvious inference unverifiable.
 - Treat undefined symbols and same-glyph/different-meaning collisions as correctness blockers, not cosmetic issues. Apply the thresholds in `references/notation-audit.md` before finalization.
 - Treat loss of a theorem's core state, policy, distribution, operator, objective, or dependency direction as a notation blocker even when the rewritten coordinate formulas are shorter and locally correct.

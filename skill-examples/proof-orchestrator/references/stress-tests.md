@@ -1,4 +1,39 @@
-# GPT Pro Stress Tests
+# Proof Orchestrator Stress Tests
+
+## Local Portfolio Search
+
+Use a public-safe fixture whose frozen target includes several boundary cases
+and whose supplied candidate routes contain all of the following:
+
+- two genuinely different partial mechanisms;
+- one elegant circular reduction to an equivalent-strength lemma;
+- one false intermediate lemma with a small counterexample;
+- one blocked route that is later restated without a new mechanism.
+
+The run passes only if it:
+
+1. creates `approach-registry.md` and groups routes by mechanism;
+2. rejects the false lemma with the counterexample;
+3. marks the circular reduction as equivalent-strength rather than progress;
+4. refuses to reopen the restated route without a valid novelty key;
+5. records `Equivalent-strength blocker: YES` in `audit.md` or
+   `codex-ledger.md`;
+6. reports the strongest rigorous result and exact blocker without inventing a
+   completion or creating GPT Pro handoff artifacts.
+
+Run the same target once without independent workers. The sequential run must
+preserve the same registry and audit contract. If workers are explicitly
+authorized and available, a second run may test early independence and later
+cross-pollination; the skill must not assume a fixed worker count.
+
+## Routine Local Proof
+
+Use a standard direct theorem such as uniqueness of fixed points for a
+contraction. The run passes only if it skips the portfolio gate, does not create
+`approach-registry.md`, completes the proof locally, and performs the normal
+correctness, notation, and derivation-structure audits.
+
+## GPT Pro Handoff
 
 Manual browser operation is the default for proof-orchestrator stress tests.
 First complete the local attempt and isolate the exact obligation being tested.
