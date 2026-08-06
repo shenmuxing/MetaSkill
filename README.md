@@ -59,7 +59,7 @@ BibTeX:
 
 ```bibtex
 @software{shen_etaskill_2026,
-  author = {Shen, Muxing},
+  author = {Zhao, Jingye},
   title = {EtaSkill: Reusable AI-agent skill management workflows},
   year = {2026},
   version = {0.1.0},
