@@ -1,17 +1,32 @@
 ---
 name: proof-orchestrator
-description: "Coordinate local-first proof runs: attempt and refine proofs with Codex, audit correctness and notation, maintain run-local sources, prepare copy-ready manual GPT Pro handoffs when local proof stalls."
+description: "Coordinate proof runs across three interfaces: exhaust actionable local proof work first, package exact unresolved obligations for a provider-neutral external solver only when justified, and keep the user informed and in control of consequential choices."
 ---
 
 # Proof Orchestrator
 
 ## Role
 
-Run proof work as a local-first pipeline. Codex first attempts the proof, checks its correctness, and edits it for clarity and economy. Escalate the remaining hard obligation to GPT Pro.
+Run proof work across three interfaces:
 
-Default escalation is manual: maintain the sources locally and give the user an exact browser-ready prompt. Invoking this skill does not authorize Codex to operate a browser, upload files, or spend API credit. Use `call-gpt-pro` only when the user explicitly asks Codex to perform the GPT Pro call for the current run.
+1. **Internal:** Codex owns the local search, falsification, correctness audit,
+   notation audit, exposition, and run record. Complete every concrete local next
+   action that remains justified and feasible.
+2. **External:** When the internal search is operationally exhausted, package
+   the verified setting, attempted routes, strongest partial results, and
+   smallest unresolved blocker for an external solver. No provider is the
+   default.
+3. **User:** Keep the user informed at meaningful decision points and preserve
+   their authority over theorem changes, source disclosure, provider choice,
+   uploads, browser operation, and paid calls.
 
-## Run Directory
+External help follows the Internal Exhaustion Gate below, unless the user
+explicitly requests earlier consultation. In either case, first prepare an
+audit-ready local account of what is known and what remains unresolved.
+
+For GPT Pro, Claude/Fable, or any other external solver, use an available authorized adapter or give the user a manual handoff. If the user selects GPT Pro and asks Codex to perform the call, load `call-gpt-pro`.
+
+## Run Directory And Canonical Record
 
 Keep each run under:
 
@@ -27,43 +42,57 @@ materials.md         # definitions, givens, notation, and source excerpts
 local-proof.md       # Codex's proof attempt or isolated blocker
 approach-registry.md # optional route portfolio for difficult proof searches
 sources/             # stable local source snapshots
-source-manifest.md   # source role, browser-visible name, and upload status
-browser-prompt.md    # exact text the user can paste into GPT Pro
-handoff.md           # manual/automated route, upload order, and status
-gpt-pro-output.md    # returned GPT Pro answer, kept as raw evidence
+source-manifest.md   # source role, disclosure status, and external filename
+external-brief.md    # provider-neutral problem and evidence package
+provider-prompt.md   # optional provider/interface-specific rendering
+handoff.md           # chosen route, authority, transfer order, and status
+external-output.md   # returned answer, kept as raw evidence
 audit.md             # correctness and source-alignment audit
 final.md             # verified, simplified, user-facing proof
 codex-ledger.md      # run state and provenance, optional
 next.md              # next narrow obligation, optional
 ```
 
-Do not create `browser-prompt.md`, `handoff.md`, or remote project state before the local attempt unless the user explicitly skips local proof or asks for a handoff package.
+Use only the files the run needs. `external-brief.md` is the canonical,
+provider-neutral handoff. Create `provider-prompt.md` only when a selected
+provider or interface requires a distinct rendering.
+
+Do not create provider-specific prompts, `handoff.md`, or remote project state
+before the local attempt unless the user explicitly requests an external
+handoff. Preparing a local `external-brief.md` after the Internal Exhaustion
+Gate passes does not itself authorize external contact.
 
 ## Continuing a Project
 
-Treat an existing run, `next*.md`, `redo*.md`, or continuation artifact as a project continuation. First read the prior `final.md`, `audit.md`, `local-proof.md`, `codex-ledger.md`, `source-manifest.md`, `handoff.md`, `approach-registry.md` when present, and any next/redo/continuation files that exist. Use `gpt-pro-output.md` only as raw evidence unless its audit accepts the relevant claims.
+Treat an existing run, `next*.md`, `redo*.md`, or continuation artifact as a project continuation. First read any prior next/redo/continuation files that exist. Treat completed run artifacts and prior external conversations as append-only evidence; do not overwrite them.
 
-Always create a new run directory for new proof work. Record the prior run ID, the exact files read, inherited proved/conjectural/rejected claims, preserved sources, and the single current obligation. Treat completed run artifacts and prior GPT Pro conversations as append-only evidence; do not overwrite them.
+Always create a new run directory for new proof work. Record the prior run ID, the exact files read, inherited proved/conjectural/rejected claims, preserved sources, and the single current obligation.
 
 When inheriting an approach registry, preserve family identities and blocker-strength classifications. Keep a blocked route blocked unless the new run records a valid novelty key under `references/portfolio-search.md`.
 
-If a continuation reaches manual GPT Pro escalation, prepare a new `browser-prompt.md`. The user may reuse a matching ChatGPT Project, but the prompt should go into a fresh conversation so old context does not silently alter the task.
+If a continuation reaches external consultation, prepare a new
+`external-brief.md` for the current obligation. Reuse prior sources only after
+checking that they still match the frozen target. Prefer a fresh external
+conversation unless `handoff.md` explains why prior context is required.
 
 ## Status Labels
 
 Use these labels in `codex-ledger.md`, `audit.md`, or `handoff.md`:
 
-- `LOCAL_ATTEMPT`
-- `LOCAL_PROVED`
-- `LOCAL_BLOCKED`
+- `INTERNAL_ATTEMPT`
+- `INTERNAL_PROVED`
+- `INTERNAL_EXHAUSTED`
+- `INTERNAL_STOPPED_WITH_ACTIONS_REMAINING`
 - `ASK_USER`
-- `READY_FOR_MANUAL_GPT_PRO`
-- `WAITING_FOR_USER_GPT_PRO_OUTPUT`
-- `READY_FOR_CODEX_DISPATCH`
-- `WAITING_FOR_GPT_PRO_OUTPUT`
-- `NEEDS_GPT_PRO_REDO`
+- `READY_FOR_EXTERNAL_BRIEF`
+- `READY_FOR_MANUAL_HANDOFF`
+- `READY_FOR_AUTHORIZED_DISPATCH`
+- `WAITING_FOR_EXTERNAL_OUTPUT`
+- `EXTERNAL_OUTPUT_RECEIVED`
+- `NEEDS_EXTERNAL_FOLLOWUP`
 - `AUDIT_FAILED`
 - `READY_FOR_USER`
+
 
 ## Notation Gate
 
@@ -110,9 +139,80 @@ theorem is true merely because the user, benchmark, or prior model output says a
 proof exists. Use independent workers only when they are explicitly authorized
 and available; the gate must also work as a sequential local search.
 
+## Three-Interface Contract
+
+### Internal Interface
+
+The local run is the canonical source of truth. Follow the Search Portfolio and
+Internal Exhaustion Gates where applicable, record both positive and negative
+evidence, and perform Codex's own correctness audit. A second model never
+substitutes for that audit.
+
+### External Interface
+
+External interaction begins from the provider-neutral `external-brief.md`
+specified in the External Handoff Contract. Choose a provider only after the
+mathematical role is clear. The provider may
+be GPT Pro, Claude/Fable, another model, a human expert, a theorem prover, or a
+specialized service. Record the choice and reason in `handoff.md`. Provider-
+specific connection instructions belong in the selected adapter or
+`provider-prompt.md`; they must not determine the core proof workflow.
+
+### User Interface
+
+Report ambiguity, missing information, a genuine blocker, justified external
+help, and the audited external result. Ask before changing the theorem,
+disclosing non-approved material, choosing materially different external routes,
+operating a browser, uploading files, sending messages, or spending credit. If
+user information is the blocker, mark `ASK_USER`. Before external contact,
+provide the decision record required in workflow step 6.
+
+## Internal Exhaustion Gate
+
+`INTERNAL_EXHAUSTED` means operationally exhausted under the frozen target,
+available local tools and sources, and any explicit user budget. It does not
+claim that no proof exists or that all mathematics has been searched.
+
+The gate passes only when all of the following are recorded in `audit.md` or
+`codex-ledger.md`:
+
+1. The exact target, assumptions, quantifiers, conventions, and allowed sources
+   are frozen; missing user choices or sources have been separated from proof
+   difficulty.
+2. Codex attempted the actual completion task and audited every claimed result,
+   rather than stopping after a difficulty probe or delegating the original
+   theorem unchanged.
+3. For a routine task, the direct route and its natural repairs were completed,
+   rejected, or reduced to an exact blocker. For a research-level, open-ended,
+   or repeatedly stalled task, the Search Portfolio Gate was applied.
+4. Every approach family is `CANDIDATE`, `BLOCKED`, or `REJECTED`; each blocked
+   family has a smallest blocker, blocker-strength classification, and attempted
+   falsification. No family remains merely `EXPLORING`.
+5. No concrete local next action remains that is both relevant and feasible.
+   Unused actionable ideas, unchecked hypotheses, or unrun decisive checks mean
+   the gate fails.
+6. The strongest locally proved result, the exact residual obligation, and
+   `Equivalent-strength blocker: <YES|NO|UNKNOWN>` are recorded.
+7. The reason for stopping is epistemic rather than cosmetic: additional local
+   work would require a new mechanism, a missing authoritative source, a user
+   decision, unavailable capability, or effort beyond an explicit budget.
+
+If work stops because of a user or environment budget while concrete actions
+remain, use `INTERNAL_STOPPED_WITH_ACTIONS_REMAINING`, list those actions, and
+do not claim exhaustion. External consultation may still be offered if the user
+requests it, but the handoff must disclose that local search was truncated.
+
+If the user explicitly requests external consultation before this gate passes,
+honor the request within its authorization boundary, but mark the exception in
+`handoff.md` and include the untried local actions in `external-brief.md`.
+
 ## Workflow
 
-Default route: freeze target -> maintain evidence -> open the search portfolio when needed -> local proof -> local correctness audit -> exposition edit -> final. If local proof stalls: maintain sources -> prepare a copy-ready manual GPT Pro handoff -> ingest returned text -> correctness audit -> exposition edit -> final.
+Default route: freeze target -> maintain evidence -> exhaust actionable internal
+work -> local correctness audit -> exposition edit -> final. When the Internal
+Exhaustion Gate passes: prepare a provider-neutral external brief -> report the
+decision record to the user -> use the user-selected manual or authorized route
+-> ingest raw output -> return to internal proof and audit -> final.
 
 1. Freeze the target.
    - Decide whether the request is new or a continuation.
@@ -122,90 +222,89 @@ Default route: freeze target -> maintain evidence -> open the search portfolio w
    - Read only the files needed to understand the target.
    - Copy stable, directly relevant snapshots into `sources/` when the original may change or cannot be referred to reliably.
    - Keep private run materials in the run directory, never in the skill package.
-3. Attempt the proof locally.
-   - Apply the Search Portfolio Gate before committing to one route when the obligation is research-level, open-ended, or repeatedly stalled.
-   - If the gate applies, maintain `approach-registry.md` and promote only an exact-target `CANDIDATE` to the normal proof audit.
+3. Run the internal proof search.
    - Try to complete the actual proof, disproof, counterexample, or diagnosis; do not stop at a difficulty probe.
    - Check definitions, boundary cases, domains, support, topology, quantifiers, and imported theorem hypotheses.
    - Write `local-proof.md` with the conclusion, proof attempt, dependencies, and any unresolved gap.
-   - If successful, mark `LOCAL_PROVED` and continue to local audit and editing.
-   - If unsuccessful, mark `LOCAL_BLOCKED`, isolate the smallest hard obligation, and only then prepare the GPT Pro package.
-4. Audit correctness locally.
+   - Apply the Search Portfolio Gate when it applies, and continue while a relevant, feasible concrete next action remains.
+4. Audit and classify the internal result.
    - Verify every theorem, lemma, reduction, equality, bound, constant, and quantifier against the stated assumptions and local sources.
    - Distinguish proved, imported, conjectural, repaired, and unsupported statements.
    - For an unresolved run, record `Equivalent-strength blocker: YES`, `NO`, or `UNKNOWN` in `audit.md` or `codex-ledger.md` and justify the classification.
-   - Treat optional external or DeepSeek review as additional evidence, not a substitute for Codex's own audit, and do not trigger a paid or remote reviewer without authorization.
+   - If the exact target passes audit, mark `INTERNAL_PROVED` and continue to exposition.
+   - If information or a theorem choice is missing, mark `ASK_USER` and present the smallest question that changes the proof state.
+   - Otherwise apply the Internal Exhaustion Gate and use its status rules. If it does not pass, return to step 3. Optional external review remains additional evidence, not a substitute for Codex's audit.
 5. Edit the proof for exposition.
-   - Always read `references/notation-audit.md` when the user asks about notation or symbols, when the output is theorem-heavy, or when one proof step contains at least five nonstandard symbols.
-   - Lead with the conclusion and expose the main logical structure.
-   - Apply the Derivation Structure Gate: state the target first, reduce it to sufficient immediate subgoals, explain the source of each subgoal, and recombine them to close the target.
-   - Before deleting notation, identify the theorem's semantic center: its state variable, policy or distribution, operator, objective, and dependency direction. Preserve these objects in every main result.
-   - Keep enough intermediate reasoning that a reader can verify every non-obvious transition.
-   - For induction, state the base case, induction hypothesis, and induction step wherever omitting one would hide the argument.
-   - Remove redundant or genuinely immediate steps only after confirming that no logical dependency is lost.
-   - Simplify notation: delete unused symbols, avoid multiple names for the same object, shorten unnecessary subscripts, and introduce notation only when it reduces total complexity.
-   - Use coordinates and abbreviations to compute with a core object, never to replace it. Map every coordinate-level conclusion back to the original theorem interface.
-   - Copy the exact seven-line scorecard from `references/notation-audit.md` into `audit.md`; do not rename, merge, or replace its metrics with an informal summary.
-   - Do not mark `READY_FOR_USER` unless core-object retention is 100% and no symbol is undefined or reused with a different meaning. Fix or explicitly justify all threshold warnings.
-   - Prefer a short direct argument over repeated summaries or decorative formalism. Never polish an unresolved gap into an apparently complete proof.
-6. Prepare manual GPT Pro escalation when needed.
-   - Narrow the request to the blocker exposed by `local-proof.md`.
-   - Complete the source-maintenance contract below.
-   - Write `browser-prompt.md` as the exact text the user can copy and paste.
-   - Write `handoff.md` with source upload order and simple return instructions.
-   - Mark `READY_FOR_MANUAL_GPT_PRO`, present the package, and wait for the user to return the answer.
-7. Dispatch only with explicit authorization.
-   - A request such as "use GPT Pro" does not by itself authorize Codex to operate the browser or spend API credit; keep the manual route.
-   - Switch to Codex execution only when the user explicitly asks Codex to call or operate GPT Pro for this run.
-   - Then mark `READY_FOR_CODEX_DISPATCH`, load `call-gpt-pro`, confirm the selected web/API route and any spending or upload authority, and follow that skill's completion protocol.
-   - Do not reuse authorization from a prior run or infer an API fallback after a browser failure.
-8. Ingest, audit, and edit the returned answer.
-   - Save user-pasted or Codex-retrieved text as `gpt-pro-output.md`.
-   - Apply only the formatting repairs allowed below before auditing.
-   - Audit correctness and source alignment before using any claim.
-   - Then perform the full exposition edit from step 5; `final.md` may be much clearer and shorter than the raw answer while preserving all necessary logic and epistemic labels.
-   - If a central gap remains, mark `NEEDS_GPT_PRO_REDO` and prepare a focused manual redo prompt first. Dispatch the redo through Codex only after new explicit authorization.
+   - Apply the Notation and Derivation Structure Gates when they apply.
+   - Lead with the conclusion, preserve each core semantic object, and retain every non-obvious logical dependency.
+   - Prefer a short direct argument to decorative formalism; do not polish an unresolved gap into an apparently complete proof.
+6. Prepare the external brief only when justified.
+   - Proceed only under the condition and exception rules in the Internal Exhaustion Gate.
+   - Complete the External Handoff Contract below and mark `READY_FOR_EXTERNAL_BRIEF`.
+   - Before contact, present what is proved locally, what was tried, what remains, why further local work is not actionable, what would be shared, and the available manual or authorized-dispatch routes. If a consequential choice remains open, mark `ASK_USER` while retaining the readiness event.
+7. Select and authorize the external route.
+   - Record the route and authority in `handoff.md` as required by the External Handoff Contract.
+   - For a manual route, provide transfer instructions and mark `READY_FOR_MANUAL_HANDOFF`; after transfer, mark `WAITING_FOR_EXTERNAL_OUTPUT`.
+   - For Codex-operated dispatch, require explicit current authority, mark `READY_FOR_AUTHORIZED_DISPATCH`, and load the relevant adapter skill. After sending, mark `WAITING_FOR_EXTERNAL_OUTPUT`.
+8. Ingest the returned material as evidence.
+   - Save user-pasted or Codex-retrieved text as `external-output.md` or the provider-specific filename recorded in `handoff.md`.
+   - Mark `EXTERNAL_OUTPUT_RECEIVED` and apply only the formatting repairs allowed below before mathematical auditing.
+   - Record the provider, conversation or task identifier when available, files actually disclosed, prompt actually sent, and whether the response is complete.
+9. Re-enter the internal loop.
+   - Audit every external claim against the frozen target and authoritative sources; use only valid ideas as new local proof actions.
+   - If the target passes, return to step 5; `final.md` may be clearer than the raw answer but must preserve necessary logic and epistemic labels. If a gap remains, first pursue the new local actions it creates; mark `NEEDS_EXTERNAL_FOLLOWUP` only after isolating the residual blocker and recording the applicable exhaustion or early-consultation exception.
 
-## Manual Handoff Contract
-
-For a manual GPT Pro handoff:
+## External Handoff Contract
 
 1. Keep authoritative copies under `sources/` with stable generic filenames.
 2. Write `source-manifest.md` with, for each source:
    - local relative path;
-   - browser-visible filename;
-   - why it is needed;
-   - whether it must be uploaded separately or is summarized in `materials.md`;
-   - current status: `ready`, `missing`, `optional`, or `returned-by-user`.
-3. Make `browser-prompt.md` self-contained with the exact target, assumptions, definitions, requested output, and source filenames GPT Pro will see. Do not include local absolute paths, route bookkeeping, or instructions meant only for Codex.
-4. End the requested output contract with a distinctive marker such as `END_GPT_PRO_OUTPUT` so copied output can be checked for completeness.
-5. Make `handoff.md` tell the user, in order, which files to upload, which text to paste, and where to paste the returned answer locally. Do not require browser automation.
+   - external-visible filename;
+   - why it is needed and whether it is authoritative or contextual;
+   - whether it must be transferred separately or is faithfully summarized in `materials.md`;
+   - disclosure status: `approved`, `not-approved`, `needs-user-approval`, or `not-needed`;
+   - readiness status: `ready`, `missing`, `optional`, or `returned-by-user`.
+3. Make `external-brief.md` self-contained and provider-neutral. Include, in this order:
+   - exact target, assumptions, quantifiers, object conventions, and allowed sources;
+   - definitions and source filenames the solver will see;
+   - locally verified results and their dependencies;
+   - attempted approach families, concrete failures, counterexamples, and blocker strengths;
+   - the smallest unresolved blocker and its relation to the original target;
+   - any concrete local actions left untried because the user requested early consultation or a budget stopped the run;
+   - exact requested output, permitted theorem imports, verification expectations, and a completion marker such as `END_EXTERNAL_OUTPUT`.
+4. If a provider or interface needs special formatting, derive `provider-prompt.md` from `external-brief.md`. Do not weaken assumptions, omit failed routes that prevent repetition, or promote conjectures to facts. Keep connection mechanics out of the canonical brief.
+5. Make `handoff.md` record the selected solver and rationale, authority granted, approved disclosures, files and prompt actually sent, transfer order, return path, status, and any deviation from the canonical brief.
 
-If a required source is missing, mark the handoff blocked rather than silently replacing it with memory. Keep the prompt narrow: ask for one lemma, counterexample, assumption check, or proof obligation whenever the local audit has isolated one.
+If a required source or disclosure decision is missing, mark `ASK_USER` or the
+handoff blocked rather than silently replacing it with memory. A narrow blocker
+is the default request. Ask for the full theorem only when independent search or
+whole-proof verification is the explicit external role, and say why that wider
+scope is useful.
 
-## GPT Pro Output Repair
+## External Output Preservation And Repair
 
-Keep `gpt-pro-output.md` recognizable as raw GPT Pro evidence. Formatting repair may fix copy corruption but must not change claims, constants, assumptions, theorem status, or proof order.
+Keep `external-output.md` or the recorded provider-specific output file
+recognizable as raw external evidence. Formatting repair may fix copy corruption
+but must not change claims, constants, assumptions, theorem status, or proof
+order.
 
 Required checks:
 
 - Confirm the requested completion marker is present.
 - Balance display-math delimiters and inspect suspicious blank lines.
 - Repair obvious escaped-brace corruption such as `\left{` to `\left\{` and `\right}` to `\right\}` only when the intended delimiter is unambiguous.
-- Remove residual web-copy separators only when their intended role is clear; otherwise flag them in `audit.md`.
+- Remove residual interface or copy separators only when their intended role is clear; otherwise flag them in `audit.md`.
 - Scan for malformed operators, stray Markdown markers, and broken right delimiters.
 
 Record nontrivial repairs in `audit.md` or `codex-ledger.md`. Perform substantive clarity and notation editing in `final.md`, after the correctness audit, rather than rewriting the raw output.
 
 ## Guardrails
 
-- Prefer a complete local proof over escalation, but label uncertainty honestly.
-- Never invent missing citations, source statements, assumptions, or proof steps to avoid escalation.
-- Never treat invoking this skill as authority for browser control, uploads, API spending, or a second GPT Pro turn.
-- Do not ask GPT Pro for a full theorem when the local attempt has isolated a smaller blocker.
+- Never invent missing citations, source statements, assumptions, or proof steps to avoid a blocker or make a handoff look complete.
+- Never treat invoking this skill as authority for browser control, uploads, remote messages, API spending, provider selection, or another external turn.
+- Never disclose a source marked `not-approved` or `needs-user-approval`.
+- Do not reuse prior authorization, silently switch providers, or infer a paid/API fallback after another route fails.
 - Do not present a comparable, equivalent, or stronger missing lemma as routine progress. Reopen a blocked route only when `references/portfolio-search.md` supplies a valid novelty key.
 - Audit before simplifying. Preserve any step whose removal would make a non-obvious inference unverifiable.
-- Treat undefined symbols and same-glyph/different-meaning collisions as correctness blockers, not cosmetic issues. Apply the thresholds in `references/notation-audit.md` before finalization.
-- Treat loss of a theorem's core state, policy, distribution, operator, objective, or dependency direction as a notation blocker even when the rewritten coordinate formulas are shorter and locally correct.
-- Treat an unjustified target-to-subgoal reduction, a circular dependency, or a derivation that never returns to its stated target as an exposition blocker.
+- Treat an external answer as raw evidence. Re-enter local search and audit before accepting it, pursue any new local actions before requesting a follow-up, and obtain new authorization before every dispatch.
 - If correctness and elegance conflict, preserve correctness and state the remaining exposition issue explicitly.
